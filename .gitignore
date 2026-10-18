@@ -1,0 +1,29 @@
+# Binary ve kurulum dosyaları (Etik ve Yasal Kurallar Madde 2: GPower.exe repoya konmaz)
+GPower*.exe
+GPowerNT.exe
+*.exe
+*.dll
+*.idb
+*.i64
+*.gpr
+*.rep/
+
+# Decompile ham çıktıları (Temiz Oda Kuralı: teslim edilen repoda ham decompile kodu yer almaz)
+Decompile/
+
+# Python önbellek ve sanal ortamları
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# İsteğe bağlı ortam değişkenleri
+.env
+.DS_Store
+Thumbs.db
