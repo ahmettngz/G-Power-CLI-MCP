@@ -432,15 +432,16 @@ def _compute_power_for_n(dz: float, alpha: float, n_val: float, tails: int) -> D
     """Internal core calculation of df, critical_t, ncp, and power for continuous or integer N."""
     df = n_val - 1.0
     p_crit = 1.0 - (alpha if tails == 1 else 0.5 * alpha)
-    t_crit = central_t_ppf(p_crit, df)
+    t_crit_abs = central_t_ppf(p_crit, df)
+    t_crit = -t_crit_abs if dz < 0.0 else t_crit_abs
     abs_ncp = math.sqrt(n_val) * abs(dz)
     signed_ncp = math.sqrt(n_val) * dz
 
-    upper_tail = 1.0 - noncentral_t_cdf(t_crit, df, abs_ncp)
+    upper_tail = 1.0 - noncentral_t_cdf(t_crit_abs, df, abs_ncp)
     if tails == 1:
         power = upper_tail
     else:
-        lower_tail = noncentral_t_cdf(-t_crit, df, abs_ncp)
+        lower_tail = noncentral_t_cdf(-t_crit_abs, df, abs_ncp)
         power = upper_tail + lower_tail
 
     return {
@@ -466,7 +467,7 @@ def _initial_sample_size_guess(dz: float, alpha: float, target_power: float, tai
 
 def _bracket_sample_size(dz: float, alpha: float, target_power: float, tails: int) -> tuple[float, float]:
     """Brackets the sample size root [n_low, n_high] starting from normal approximation."""
-    min_bound = 2.0 + 1e-6  # 2.000001
+    min_bound = 2.0
     guess = max(min_bound, _initial_sample_size_guess(dz, alpha, target_power, tails))
     f_guess = _compute_power_for_n(dz, alpha, guess, tails)["power"] - target_power
 
