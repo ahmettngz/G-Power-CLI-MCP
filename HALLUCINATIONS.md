@@ -46,3 +46,33 @@ Bu belge, Teardown Sprint ve Clean Room yeniden yazım sürecinde ajanın veya s
   olduğu doğrudan binary kanıtıyla (`[REA]`) tespit edildi.
 - **Hangi Test Yakaladı?**
   `tests/test_differential.py::test_effect_size_calculator_sign_behavior` testi ile doğrulandı.
+
+---
+
+## Halüsinasyon #4: Negatif $d_z$ Girişinde Kritik $t$ Değerinin Pozitif Gösterileceği Varsayımı
+
+- **İlk Varsayım (Halüsinasyon):**
+  İki kuyruklu analizde kritik sınırın simetrik ($\pm t_{\text{crit}}$) olması ve tek kuyrukta genellikle sağ kuyruğun varsayılması nedeniyle motorun `critical` çıktısının daima pozitif mutlak değer üretmesi gerektiği varsayılmış ve sentetik oracle CSV'sine (`GP11`, `GP12`, `GP29`) pozitif değerler yazılmıştı.
+- **Nasıl Fark Edildi?**
+  Gerçek G*Power 3.1.9.7 GUI arayüzünden `oracle/gpower_real_vectors.csv` için veri toplanırken:
+  - `GP11` (`a-priori, tails=2, dz=-0.5`): G*Power ekranda `Critical t = -2.0057460` gösterdi.
+  - `GP12` (`a-priori, tails=1, dz=-0.6`): G*Power ekranda `Critical t = -1.7207429` gösterdi.
+  - `GP29` (`post-hoc, tails=2, dz=-0.4`): G*Power ekranda `Critical t = -1.9960084` gösterdi.
+  G*Power'ın $d_z < 0$ olduğunda kritik $t$ değerini etki büyüklüğü yönüyle işaretlendirdiği (`Critical t = sign(dz) * |t_crit|`) kanıtlandı.
+- **Hangi Test Yakaladı?**
+  `tests/test_oracle_real_differential.py` testi ve `oracle/screenshots/GP11.png`, `oracle/screenshots/GP12.png`, `oracle/screenshots/GP29.png` ekran görüntüleri ile yakalandı.
+
+---
+
+## Halüsinasyon #5: Post-Hoc Moddaki $N \ge 3$ Sınırının A-Priori Mod İçin de Geçerli Olduğu Varsayımı
+
+- **İlk Varsayım (Halüsinasyon):**
+  Halüsinasyon #2'de keşfedilen `FUN_00488a10(N, 3, ...)` kontrolü genel bir alt sınır sanılarak hem post-hoc hem a-priori modda minimum örneklem büyüklüğü $N = 3$ olarak zorlanmıştı (`src/engine.py` içinde `max(3, round_up_sample_size(...))`).
+- **Nasıl Fark Edildi?**
+  Gerçek G*Power 3.1.9.7 üzerinde sınır durumlar çalıştırıldığında:
+  - `GP16` (`extreme_dz_15.0_minN2, dz=15.0, power=0.8`): G*Power `Total sample size = 2`, `Df = 1` üretti.
+  - `GP17` (`boundary_power_eq_alpha, dz=0.5, power=0.05`): G*Power `Total sample size = 2`, `Df = 1` üretti.
+  G*Power'ın $N \ge 3$ alt sınırını yalnızca `post-hoc` modda uyguladığı; `a-priori` modda ise teorik minimum serbestlik derecesi olan $\text{df} = 1$ ($N = 2$) değerine kadar izin verdiği doğrudan kanıtlandı.
+- **Hangi Test Yakaladı?**
+  `tests/test_oracle_real_differential.py` testi ve `oracle/screenshots/GP16.png`, `oracle/screenshots/GP17.png` ekran görüntüleri ile yakalandı.
+
